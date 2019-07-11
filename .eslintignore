@@ -1,0 +1,11 @@
+public/
+node_modules/
+.hooks/
+test/
+dist/
+build/
+.vscode/
+.git/
+
+./**.js
+**.min.js

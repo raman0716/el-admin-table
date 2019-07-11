@@ -1,0 +1,63 @@
+const { VueLoaderPlugin } = require("vue-loader");
+const path = require("path");
+const glob = require("glob");
+
+const demos = glob.sync("docs/!(basic).md");
+const demoSections = [
+  {
+    name: "basic",
+    content: "docs/basic.md"
+  }
+].concat(
+  demos.map(filePath => ({
+    name: path.basename(filePath, ".md"),
+    content: filePath
+  }))
+);
+
+module.exports = {
+  styleguideDir: "docs",
+  pagePerSection: true,
+  ribbon: {
+    url: ""
+  },
+  sections: [
+    {
+      name: "Components",
+      components: "src/el-form-renderer.js",
+      usageMode: "expand"
+    },
+    {
+      name: "Demo",
+      sections: demoSections
+    }
+  ],
+  webpackConfig: {
+    module: {
+      rules: [
+        {
+          test: /\.vue$/,
+          loader: "vue-loader"
+        },
+        {
+          test: /\.js?$/,
+          exclude: /node_modules/,
+          loader: "babel-loader"
+        },
+        {
+          test: /\.css$/,
+          loaders: ["style-loader", "css-loader"]
+        },
+        {
+          test: /\.styl(us)?$/,
+          loaders: ["vue-style-loader", "css-loader", "stylus-loader"]
+        },
+        {
+          test: /\.(woff2?|eot|[to]tf)(\?.*)?$/,
+          loader: "file-loader"
+        }
+      ]
+    },
+    plugins: [new VueLoaderPlugin()]
+  }
+};
