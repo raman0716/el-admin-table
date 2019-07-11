@@ -11,8 +11,5 @@ export default {
       default: null,
     },
   },
-  render: (h, ctx) => ctx.props.render(h, ctx.props.row),
-  mounted() {
-    console.log(this.row)
-  }
+  render: (h, ctx) => ctx.props.render(h, ctx.props.row)
 }
