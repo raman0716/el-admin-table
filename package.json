@@ -1,12 +1,16 @@
 {
-  "name": "@el-admin/el-admin-table",
-  "version": "0.1.3",
+  "name": "el-admin-table",
+  "version": "0.1.4",
   "description": "vue element-ui table form pagination",
   "main": "./src/index.js",
   "scripts": {
     "dev": "vue-styleguidist server",
     "lint": "vue-cli-service lint --ext .js,.vue src",
     "prettier": "prettier --loglevel silent --write src/**/*.vue src/**/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Raman0716/el-admin-table"
   },
   "keywords": [
     "vue",
@@ -20,7 +24,7 @@
   "dependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.5.0",
-    "element-ui": "~2.10.1",
+    "element-ui": "^2.8.2",
     "vue": "^2.6.10"
   },
   "devDependencies": {

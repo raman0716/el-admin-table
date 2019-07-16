@@ -8,6 +8,9 @@ export default {
         return {};
       }
     },
+    show: {
+      type: Function
+    },
     row: {
       type: Object,
       default: () => {
@@ -17,7 +20,8 @@ export default {
   },
   render(h) {
     // validator(this.attrs)
-    const { prop, attr } = this.data
+    const { prop, attr, show } = this.data
+    if (show && !show(this.row)) return;
     return h('el-button', {
       props: typeof prop === 'function' ? {
         size,
