@@ -64,11 +64,10 @@
     <div class="pager">
       <el-pagination :current-page="pager.currentPage"
                      @current-change="currentChange"
-                     :page-sizes="[5, 10, 20, 50]"
-                     :page-size="pageSize"
+                     @size-change="sizeChange"
                      layout="total, sizes, prev, pager, next, jumper"
                      :total="totalNum"
-                     v-bind="pagerAttrs"
+                     v-bind="pagerAttrsMirror"
                      v-on="$listeners" />
     </div>
   </div>
@@ -76,6 +75,10 @@
 <script>
 import renderButton from "./render-button";
 import renderExpand from "./render-expand";
+// 默认分页的配置项目，mirror的方式可以覆盖
+const defaultPager = {
+  "page-sizes": [5, 10, 20, 50]
+};
 export default {
   name: "el-admin-table",
   components: { renderButton, renderExpand },
@@ -92,19 +95,15 @@ export default {
         return {};
       }
     },
-    pageSize: {
-      type: Number,
-      default: 10
-    },
-    // 表格配置项
-    tableAttrs: {
+    // 不用渲染form的时候用的筛选条件
+    customQuery: {
       type: Object,
       default: () => {
         return {};
       }
     },
-    // 不用渲染form的时候用的筛选条件
-    customQuery: {
+    // 表格配置项
+    tableAttrs: {
       type: Object,
       default: () => {
         return {};
@@ -122,6 +121,12 @@ export default {
     hasSearch() {
       return Object.keys(this.formData).length > 0;
     },
+    pagerAttrsMirror() {
+      return {
+        ...defaultPager,
+        ...this.pagerAttrs
+      };
+    },
     tableAttrsMirror() {
       let json = {};
       for (let x in this.tableAttrs) {
@@ -137,7 +142,7 @@ export default {
       formDataOrigin: null,
       totalNum: 0,
       loading: false,
-      tableData: [],
+      tableData: [{ name: 1 }],
       pager: {
         currentPage: 1
       }
@@ -167,7 +172,7 @@ export default {
           ...this.formData,
           ...this.customQuery,
           ...this.pager,
-          pageSize: this.pageSize
+          pageSize: this.pagerAttrs["page-size"]
         };
         this.loading = true;
         if (!this.apiFn) {
@@ -183,6 +188,15 @@ export default {
       } catch (e) {
         console.warn(e);
       }
+    },
+    sizeChange(val) {
+      this.$emit("update:pagerAttrs", {
+        ...this.pagerAttrs,
+        "page-size": val
+      });
+      this.$nextTick(() => {
+        this.getList();
+      });
     }
   },
   created() {
