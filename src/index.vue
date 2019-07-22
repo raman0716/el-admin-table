@@ -75,10 +75,7 @@
 <script>
 import renderButton from "./render-button";
 import renderExpand from "./render-expand";
-// 默认分页的配置项目，mirror的方式可以覆盖
-const defaultPager = {
-  "page-sizes": [5, 10, 20, 50]
-};
+
 export default {
   name: "el-admin-table",
   components: { renderButton, renderExpand },
@@ -123,7 +120,7 @@ export default {
     },
     pagerAttrsMirror() {
       return {
-        ...defaultPager,
+        ...this.defaultPager,
         ...this.pagerAttrs
       };
     },
@@ -140,9 +137,14 @@ export default {
   data() {
     return {
       formDataOrigin: null,
-      totalNum: 0,
+      totalNum: 30,
       loading: false,
       tableData: [{ name: 1 }],
+      // 默认分页的配置项目，mirror的方式可以覆盖
+      defaultPager: {
+        "page-sizes": [5, 10, 20, 50],
+        "page-size": 10
+      },
       pager: {
         currentPage: 1
       }
@@ -172,8 +174,9 @@ export default {
           ...this.formData,
           ...this.customQuery,
           ...this.pager,
-          pageSize: this.pagerAttrs["page-size"]
+          pageSize: this.pagerAttrsMirror["page-size"]
         };
+        console.log(params, this.pagerAttrsMirror);
         this.loading = true;
         if (!this.apiFn) {
           setTimeout(() => {
@@ -190,10 +193,12 @@ export default {
       }
     },
     sizeChange(val) {
+      this.defaultPager["page-size"] = val;
       this.$emit("update:pagerAttrs", {
         ...this.pagerAttrs,
         "page-size": val
       });
+      this.pager.currentPage = 1;
       this.$nextTick(() => {
         this.getList();
       });
