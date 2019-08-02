@@ -13,6 +13,9 @@
       type: 'selection'
     },
     {
+      type: 'index'
+    },
+    {
       col: {
         sortable: true
       },

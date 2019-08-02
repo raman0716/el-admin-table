@@ -6,7 +6,7 @@
 ### api 调用需要传入 apiFn
 
 ### formData使用 .sync 方式传入,可以互动成功
-### pagerAttrs使用 .sync 方式传入,可以互动成功
+### pagerAttrs .sync 方式传入,可以互动成功
 
 ###  使用参考对应的 [name]-template.md
 ```
@@ -25,6 +25,9 @@
       },
       {
         type: selection
+      },
+      {
+        type: "index" // 序号
       },
       {
         type: operation,

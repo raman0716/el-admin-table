@@ -1,7 +1,7 @@
 export default {
   name: 'render-expand',
   functional: true,
-  inheritAttrs: true,
+  inheritAttrs: false,
   props: {
     row: Object,
     render: Function,

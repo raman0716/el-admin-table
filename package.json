@@ -1,6 +1,6 @@
 {
   "name": "el-admin-table",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "vue element-ui table form pagination",
   "main": "./src/index.js",
   "scripts": {

@@ -12,6 +12,7 @@
                    @click="goSearch">查询</el-button>
         <el-button @click="reset">重置</el-button>
       </el-form-item>
+      <slot name="right-btns"></slot>
     </el-form>
 
     <slot name="top-content" />
@@ -26,8 +27,18 @@
                          v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'selection')"
                          :key="`selection-${columnIndex}`" />
       </template>
+
       <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
-        <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => (c.type !== 'selection'&&c.type !== 'operation'))"
+        <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'index')"
+                         :key="`index-${columnIndex}`"
+                         label="序号"
+                         type="index"
+                         :index="typeIndex"
+                         v-bind="column.col" />
+      </template>
+
+      <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
+        <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => (c.type !== 'selection'&&c.type !== 'operation' && c.type !== 'index'))"
                          :key="`col-${columnIndex}`"
                          :label="column.label"
                          v-bind="column.col"
@@ -81,6 +92,11 @@ export default {
   components: { renderButton, renderExpand },
   inheritAttrs: false,
   props: {
+    // 用于显示总条数
+    totalCount: {
+      type: Number,
+      default: 0
+    },
     // API函数 给个参数位置 apiFn(param)
     apiFn: {
       type: Function
@@ -112,6 +128,10 @@ export default {
       default: () => {
         return {};
       }
+    },
+    // 表格列表需要自己组装的数据结构
+    filterOut: {
+      type: Function
     }
   },
   computed: {
@@ -137,9 +157,9 @@ export default {
   data() {
     return {
       formDataOrigin: null,
-      totalNum: 30,
+      totalNum: 0,
       loading: false,
-      tableData: [{ name: 1 }],
+      tableData: [],
       // 默认分页的配置项目，mirror的方式可以覆盖
       defaultPager: {
         "page-sizes": [5, 10, 20, 50],
@@ -151,6 +171,9 @@ export default {
     };
   },
   methods: {
+    typeIndex(index) {
+      return index + (this.pager.currentPage - 1) * this.defaultPager["page-size"] + 1;
+    },
     goSearch() {
       this.pager.currentPage = 1;
       this.getList();
@@ -169,14 +192,15 @@ export default {
       this.getList();
     },
     async getList() {
+      let t = Object.values(this.customQuery).some(e => !e);
+      if (t) return;
       try {
         const params = {
           ...this.formData,
           ...this.customQuery,
-          ...this.pager,
-          pageSize: this.pagerAttrsMirror["page-size"]
+          page: this.pager.currentPage,
+          size: this.pagerAttrsMirror["page-size"]
         };
-        console.log(params, this.pagerAttrsMirror);
         this.loading = true;
         if (!this.apiFn) {
           setTimeout(() => {
@@ -184,10 +208,18 @@ export default {
           }, 200);
           return console.warn("apiFn 为空");
         }
-        const { data } = await this.apiFn(params);
-        this.tableData = data;
-        this.totalNum = data.total;
+
+        const { totalCount, data, payload } = await this.apiFn(params);
+        let res = payload || data;
+        if (this.filterOut) {
+          this.tableData = this.filterOut(res);
+        } else {
+          this.tableData = res;
+        }
+        this.totalNum = totalCount;
+        this.$emit("update:totalCount", totalCount || 0);
         this.loading = false;
+        return Promise.resolve();
       } catch (e) {
         console.warn(e);
       }

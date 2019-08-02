@@ -1,4 +1,6 @@
-const size = 'small';
+const size = "small";
+const type = "text";
+let timer = 0;
 export default {
   inheritAttrs: false,
   props: {
@@ -25,8 +27,9 @@ export default {
     return h('el-button', {
       props: typeof prop === 'function' ? {
         size,
+        type,
         ...prop(this.row)
-      } : { size },
+      } : { size, type },
       attrs: typeof attr === 'function' ? {
         ...attr(this.row)
       } : {},
@@ -38,7 +41,10 @@ export default {
   methods: {
     atClick(e) {
       e.stopPropagation();
-      this.data.atClick ? this.data.atClick(this.row) : () => { };
+      clearInterval(timer);
+      timer = setTimeout(() => {
+        this.data.atClick ? this.data.atClick(this.row) : () => { };
+      }, 300);
     }
   }
 }
