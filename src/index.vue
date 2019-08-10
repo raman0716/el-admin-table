@@ -21,6 +21,9 @@
               :data="tableData"
               v-on="$listeners"
               size="small"
+              @selection-change="selectChange"
+              :class="{'last_key':chooseOne}"
+              ref="elTable"
               v-bind="tableAttrsMirror">
       <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
         <el-table-column type="selection"
@@ -31,7 +34,7 @@
       <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
         <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'index')"
                          :key="`index-${columnIndex}`"
-                         label="序号"
+                         :label="column.label || '序号'"
                          type="index"
                          :index="typeIndex"
                          v-bind="column.col" />
@@ -84,7 +87,7 @@
   </div>
 </template>
 <script>
-import renderButton from "./render-button";
+import renderButton from "./render-button.vue";
 import renderExpand from "./render-expand";
 
 export default {
@@ -92,6 +95,10 @@ export default {
   components: { renderButton, renderExpand },
   inheritAttrs: false,
   props: {
+    // 开启选择框单选时，emit 最后一个选择
+    selectUnique: {
+      type: Object
+    },
     // 用于显示总条数
     totalCount: {
       type: Number,
@@ -135,6 +142,9 @@ export default {
     }
   },
   computed: {
+    chooseOne() {
+      return this.selectUnique !== undefined;
+    },
     hasSearch() {
       return Object.keys(this.formData).length > 0;
     },
@@ -171,6 +181,26 @@ export default {
     };
   },
   methods: {
+    isSelect(rows) {
+      if (rows) {
+        this.$nextTick(() => {
+          rows.forEach(row => {
+            this.$refs.elTable.toggleRowSelection(row, true);
+          });
+        });
+      }
+    },
+    selectChange(val) {
+      if (!this.chooseOne) return;
+      let res = [];
+      if (val.length > 1) {
+        res = val.pop();
+        this.$refs.elTable.clearSelection();
+        this.$refs.elTable.toggleRowSelection(res, true);
+        return;
+      }
+      this.$emit("update:selectUnique", val[0] || {});
+    },
     typeIndex(index) {
       return index + (this.pager.currentPage - 1) * this.defaultPager["page-size"] + 1;
     },
@@ -181,11 +211,21 @@ export default {
     },
     reset() {
       this.pager.currentPage = 1;
+      // 置空formDataOrigin
+      for (var i in this.formDataOrigin) {
+        this.formDataOrigin[i] = "";
+      }
       this.$emit("update:formData", this.formDataOrigin);
       this.$emit("reset");
       this.$nextTick(() => {
         this.getList();
       });
+    },
+    clearSelection() {
+      this.$refs.elTable.clearSelection();
+    },
+    toggleRowSelection(row, expanded) {
+      this.$refs.elTable.toggleRowSelection(row, expanded);
     },
     currentChange(val) {
       this.pager.currentPage = val;
@@ -193,7 +233,10 @@ export default {
     },
     async getList() {
       let t = Object.values(this.customQuery).some(e => !e);
-      if (t) return;
+      if (t) {
+        console.warn("customQuery有部分参数为空");
+        return;
+      }
       try {
         const params = {
           ...this.formData,
@@ -210,14 +253,15 @@ export default {
         }
 
         const { totalCount, data, payload } = await this.apiFn(params);
-        let res = payload || data;
+        let res = payload || data || [];
         if (this.filterOut) {
           this.tableData = this.filterOut(res);
         } else {
           this.tableData = res;
         }
         this.totalNum = totalCount;
-        this.$emit("update:totalCount", totalCount || 0);
+        this.$emit("getTableData", res);
+        this.$emit("update:totalCount", totalCount || this.tableData.length || 0);
         this.loading = false;
         return Promise.resolve();
       } catch (e) {
@@ -258,6 +302,15 @@ export default {
   .pager {
     text-align: right;
     margin-top: 20px;
+  }
+  .last_key {
+    /deep/ {
+      .el-table__header {
+        .el-checkbox {
+          display: none;
+        }
+      }
+    }
   }
 }
 </style>
