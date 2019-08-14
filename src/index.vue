@@ -7,7 +7,7 @@
              v-on="$listeners"
              v-if="hasSearch">
       <slot name="search"></slot>
-      <el-form-item>
+      <el-form-item v-if="hasSearchBtn">
         <el-button type="primary"
                    @click="goSearch">查询</el-button>
         <el-button @click="reset">重置</el-button>
@@ -139,6 +139,11 @@ export default {
     // 表格列表需要自己组装的数据结构
     filterOut: {
       type: Function
+    },
+    // 是否需要查询按钮
+    hasSearchBtn: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -188,6 +193,8 @@ export default {
             this.$refs.elTable.toggleRowSelection(row, true);
           });
         });
+      } else {
+        this.$refs.elTable.clearSelection();
       }
     },
     selectChange(val) {
@@ -195,11 +202,14 @@ export default {
       let res = [];
       if (val.length > 1) {
         res = val.pop();
-        this.$refs.elTable.clearSelection();
+        this.clearSelection();
         this.$refs.elTable.toggleRowSelection(res, true);
         return;
       }
       this.$emit("update:selectUnique", val[0] || {});
+    },
+    clearSelection() {
+      this.$refs.elTable.clearSelection();
     },
     typeIndex(index) {
       return index + (this.pager.currentPage - 1) * this.defaultPager["page-size"] + 1;
@@ -212,7 +222,7 @@ export default {
     reset() {
       this.pager.currentPage = 1;
       // 置空formDataOrigin
-      for (var i in this.formDataOrigin) {
+      for (let i in this.formDataOrigin) {
         this.formDataOrigin[i] = "";
       }
       this.$emit("update:formData", this.formDataOrigin);
@@ -220,9 +230,6 @@ export default {
       this.$nextTick(() => {
         this.getList();
       });
-    },
-    clearSelection() {
-      this.$refs.elTable.clearSelection();
     },
     toggleRowSelection(row, expanded) {
       this.$refs.elTable.toggleRowSelection(row, expanded);
@@ -259,13 +266,14 @@ export default {
         } else {
           this.tableData = res;
         }
-        this.totalNum = totalCount;
+        this.totalNum = totalCount || this.tableData.length || 0;
         this.$emit("getTableData", res);
         this.$emit("update:totalCount", totalCount || this.tableData.length || 0);
         this.loading = false;
         return Promise.resolve();
       } catch (e) {
         console.warn(e);
+        this.loading = false;
       }
     },
     sizeChange(val) {
