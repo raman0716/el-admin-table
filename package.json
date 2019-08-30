@@ -1,6 +1,6 @@
 {
   "name": "el-admin-table",
-  "version": "0.2.1",
+  "version": "0.2.6",
   "description": "vue element-ui table form pagination",
   "main": "./src/index.js",
   "scripts": {
@@ -36,7 +36,6 @@
     "eslint": "^6.0.1",
     "pre-commit": "^1.2.2",
     "prettier": "^1.18.2",
-    "react-docgen": "^2.17.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "vue-loader": "^15.7.0",

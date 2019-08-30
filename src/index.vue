@@ -9,8 +9,12 @@
       <slot name="search"></slot>
       <el-form-item v-if="hasSearchBtn">
         <el-button type="primary"
-                   @click="goSearch">查询</el-button>
-        <el-button @click="reset">重置</el-button>
+                   @click="goSearch">
+          {{searchBtnTxt}}
+        </el-button>
+        <el-button @click="reset">
+          {{resetBtnTxt}}
+        </el-button>
       </el-form-item>
       <slot name="right-btns"></slot>
     </el-form>
@@ -34,7 +38,7 @@
       <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
         <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'index')"
                          :key="`index-${columnIndex}`"
-                         :label="column.label || '序号'"
+                         :label="column.label || indexTxt"
                          type="index"
                          :index="typeIndex"
                          v-bind="column.col" />
@@ -59,7 +63,7 @@
       <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
         <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'operation')"
                          :key="`operation-${columnIndex}`"
-                         label="操作"
+                         :label="operationTxt"
                          v-bind="column.col">
           <template slot-scope="scope">
             <renderButton v-for="(item, i ) in column.btns"
@@ -71,7 +75,7 @@
       </template>
       <div slot="empty">
         <slot name="empty">
-          暂无数据
+          {{emptyTxt}}
         </slot>
       </div>
     </el-table>
@@ -89,58 +93,116 @@
 <script>
 import renderButton from "./render-button.vue";
 import renderExpand from "./render-expand";
+import { Table, TableColumn, Button, Pagination } from "element-ui";
 
 export default {
   name: "el-admin-table",
-  components: { renderButton, renderExpand },
+  components: {
+    renderButton,
+    renderExpand,
+    "el-table": Table,
+    "el-table-column": TableColumn,
+    "el-button": Button,
+    "el-pagination": Pagination
+  },
   inheritAttrs: false,
   props: {
-    // 开启选择框单选时，emit 最后一个选择
+    searchBtnTxt: {
+      type: String,
+      default: "查询"
+    },
+    resetBtnTxt: {
+      type: String,
+      default: "重置"
+    },
+    indexTxt: {
+      type: String,
+      default: "序号"
+    },
+    operationTxt: {
+      type: String,
+      default: "操作"
+    },
+    emptyTxt: {
+      type: String,
+      default: "暂无数据"
+    },
+    /**
+     * 开启选择框单选时，emit 最后一个选择 selectUnique.sync 接收
+     * when el-table selection prop is enabled, selectUnique.sync will receive the last choice
+     */
     selectUnique: {
       type: Object
     },
-    // 用于显示总条数
+    /**
+     * 用于显示总条数
+     * sometimes we need to get the total amount after a success request, totalCount.sync prop will receive the number
+     */
     totalCount: {
       type: Number,
       default: 0
     },
-    // API函数 给个参数位置 apiFn(param)
+    /**
+     * API函数 给个参数位置 apiFn(param)
+     * 在父组件中调用可以用 apiFn(params) => otherFn(params, args)
+     API function (param)
+     complicated use e.g.
+     */
     apiFn: {
       type: Function
     },
-    // 分页插件配置
+    /**
+     * 分页插件配置
+     * el-pagination config
+     */
     pagerAttrs: {
       type: Object,
       default: () => {
         return {};
       }
     },
-    // 不用渲染form的时候用的筛选条件
+    /**
+     * 不用渲染form的时候用的参数条件，任意参数为空，将不发请求，需要手动
+     * some static params without rendering a form
+     * [ Warning: an empty key-value will stop the request ]
+     */
     customQuery: {
       type: Object,
       default: () => {
         return {};
       }
     },
-    // 表格配置项
+    /**
+     * 表格配置项
+     * el-table props accepted
+     */
     tableAttrs: {
       type: Object,
       default: () => {
         return {};
       }
     },
-    // 表单
+    /**
+     * 表单
+     * alias el-form model
+     */
     formData: {
       type: Object,
       default: () => {
         return {};
       }
     },
-    // 表格列表需要自己组装的数据结构
+    /**
+     * 表格列表需要自己组装的数据结构
+     * when http-response brings you a complicated Object, you can use this functional prop format the response
+     */
     filterOut: {
       type: Function
     },
-    // 是否需要查询按钮
+    /**
+     * 是否需要查询按钮
+     * whether you need search buttons
+     */
     hasSearchBtn: {
       type: Boolean,
       default: true
@@ -175,7 +237,11 @@ export default {
       totalNum: 0,
       loading: false,
       tableData: [],
-      // 默认分页的配置项目，mirror的方式可以覆盖
+      /**
+       * 默认分页的配置项目，pagerAttrsMirror 的方式可以覆盖
+       * initialize the pagination config, pagerAttrsMirror will overwrite this
+       */
+
       defaultPager: {
         "page-sizes": [5, 10, 20, 50],
         "page-size": 10
@@ -186,17 +252,6 @@ export default {
     };
   },
   methods: {
-    isSelect(rows) {
-      if (rows) {
-        this.$nextTick(() => {
-          rows.forEach(row => {
-            this.$refs.elTable.toggleRowSelection(row, true);
-          });
-        });
-      } else {
-        this.$refs.elTable.clearSelection();
-      }
-    },
     selectChange(val) {
       if (!this.chooseOne) return;
       let res = [];
@@ -221,7 +276,10 @@ export default {
     },
     reset() {
       this.pager.currentPage = 1;
-      // 置空formDataOrigin
+      /**
+       * 置空 formDataOrigin
+       * reset formDataOrigin
+       */
       for (let i in this.formDataOrigin) {
         this.formDataOrigin[i] = "";
       }
@@ -241,7 +299,7 @@ export default {
     async getList() {
       let t = Object.values(this.customQuery).some(e => !e);
       if (t) {
-        console.warn("customQuery有部分参数为空");
+        console.warn("customQuery有部分参数为空, customQuery has at least one empty prop");
         return;
       }
       try {
@@ -256,7 +314,7 @@ export default {
           setTimeout(() => {
             this.loading = false;
           }, 200);
-          return console.warn("apiFn 为空");
+          return console.warn("apiFn 为空, apiFn is not available");
         }
 
         const { totalCount, data, payload } = await this.apiFn(params);
