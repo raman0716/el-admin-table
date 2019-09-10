@@ -1,5 +1,5 @@
 export default {
-  name: 'render-expand',
+  name: "render-expand",
   functional: true,
   inheritAttrs: false,
   props: {
@@ -8,8 +8,8 @@ export default {
     index: Number,
     column: {
       type: Object,
-      default: null,
-    },
+      default: null
+    }
   },
   render: (h, ctx) => ctx.props.render(h, ctx.props.row)
-}
+};
