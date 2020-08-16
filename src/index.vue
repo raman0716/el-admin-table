@@ -1,21 +1,18 @@
 <template>
   <div class="el_admin_table">
-    <el-form ref="searchForm"
-             :inline="true"
-             size="small"
-             :model="formData"
-             v-on="$listeners"
-             v-if="hasSearch"
-             @submit.native.prevent>
+    <el-form
+      ref="searchForm"
+      :inline="true"
+      size="small"
+      :model="formData"
+      v-on="$listeners"
+      v-if="hasSearch"
+      @submit.native.prevent
+    >
       <slot name="search"></slot>
       <el-form-item v-if="hasSearchBtn">
-        <el-button type="primary"
-                   @click="goSearch">
-          {{searchBtnTxt}}
-        </el-button>
-        <el-button @click="reset">
-          {{resetBtnTxt}}
-        </el-button>
+        <el-button type="primary" @click="goSearch">{{searchBtnTxt}}</el-button>
+        <el-button @click="reset">{{resetBtnTxt}}</el-button>
       </el-form-item>
       <slot name="right-btns" />
     </el-form>
@@ -23,38 +20,44 @@
     <div v-loading="loading">
       <slot name="top-content" />
 
-      <el-table :data="tableData"
-                v-on="$listeners"
-                size="small"
-                @selection-change="selectChange"
-                :class="{'last_key':chooseOne}"
-                ref="elTable"
-                v-bind="tableAttrsMirror">
+      <el-table
+        :data="tableData"
+        v-on="$listeners"
+        size="small"
+        @selection-change="selectChange"
+        :class="{'last_key':chooseOne}"
+        ref="elTable"
+        v-bind="tableAttrsMirror"
+      >
         <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
-          <el-table-column type="selection"
-                           v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'selection')"
-                           :key="`selection-${columnIndex}`" />
+          <el-table-column
+            type="selection"
+            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'selection')"
+            :key="`selection-${columnIndex}`"
+          />
         </template>
 
         <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
-          <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'index')"
-                           :key="`index-${columnIndex}`"
-                           :label="column.label || indexTxt"
-                           type="index"
-                           :index="typeIndex"
-                           v-bind="column.col" />
+          <el-table-column
+            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'index')"
+            :key="`index-${columnIndex}`"
+            :label="column.label || indexTxt"
+            type="index"
+            :index="typeIndex"
+            v-bind="column.col"
+          />
         </template>
 
         <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
-          <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => (c.type !== 'selection'&&c.type !== 'operation' && c.type !== 'index'))"
-                           :key="`col-${columnIndex}`"
-                           :label="column.label"
-                           v-bind="column.col"
-                           :render="column.render">
+          <el-table-column
+            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => (c.type !== 'selection'&&c.type !== 'operation' && c.type !== 'index'))"
+            :key="`col-${columnIndex}`"
+            :label="column.label"
+            v-bind="column.col"
+            :render="column.render"
+          >
             <template slot-scope="scope">
-              <renderExpand v-if="column.render"
-                            :row="scope.row"
-                            :render="column.render" />
+              <renderExpand v-if="column.render" :row="scope.row" :render="column.render" />
               <span v-else-if="column.formatter">{{ column.formatter(scope.row) }}</span>
               <span v-else>{{ scope.row[column.prop] }}</span>
             </template>
@@ -62,32 +65,36 @@
         </template>
 
         <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
-          <el-table-column v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'operation')"
-                           :key="`operation-${columnIndex}`"
-                           :label="operationTxt"
-                           v-bind="column.col">
+          <el-table-column
+            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'operation')"
+            :key="`operation-${columnIndex}`"
+            :label="operationTxt"
+            v-bind="column.col"
+          >
             <template slot-scope="scope">
-              <renderButton v-for="(item, i ) in column.btns"
-                            :key="i"
-                            :data="item"
-                            :row="scope.row" />
+              <renderButton
+                v-for="(item, i ) in column.btns"
+                :key="i"
+                :data="item"
+                :row="scope.row"
+              />
             </template>
           </el-table-column>
         </template>
         <div slot="empty">
-          <slot name="empty">
-            {{emptyTxt}}
-          </slot>
+          <slot name="empty">{{emptyTxt}}</slot>
         </div>
       </el-table>
       <div class="pager">
-        <el-pagination :current-page="pager.currentPage"
-                       @current-change="currentChange"
-                       @size-change="sizeChange"
-                       layout="total, sizes, prev, pager, next, jumper"
-                       :total="totalNum"
-                       v-bind="pagerAttrsMirror"
-                       v-on="$listeners" />
+        <el-pagination
+          :current-page="pager.currentPage"
+          @current-change="currentChange"
+          @size-change="sizeChange"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="totalNum"
+          v-bind="pagerAttrsMirror"
+          v-on="$listeners"
+        />
       </div>
     </div>
   </div>
@@ -95,13 +102,15 @@
 <script>
 import renderButton from "./render-button.vue";
 import renderExpand from "./render-expand";
-import { Table, TableColumn, Button, Pagination } from "element-ui";
+import { Form, FormItem, Table, TableColumn, Button, Pagination } from "element-ui";
 
 export default {
   name: "el-admin-table",
   components: {
     renderButton,
     renderExpand,
+    "el-form": Form,
+    "el-form-item": FormItem,
     "el-table": Table,
     "el-table-column": TableColumn,
     "el-button": Button,
@@ -226,7 +235,7 @@ export default {
     tableAttrsMirror() {
       let json = {};
       for (let x in this.tableAttrs) {
-        if (x && x !== "column") {
+        if (x && x !== "columns") {
           json.x = this.tableAttrs.x;
         }
       }

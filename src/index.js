@@ -1,3 +1,4 @@
+import "element-ui/packages/theme-chalk/src/index.scss";
 import ElAdminTable from "./index.vue";
 // install function executed by Vue.use()
 export function install(Vue) {

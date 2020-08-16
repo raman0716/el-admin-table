@@ -1,12 +1,13 @@
 {
   "name": "el-admin-table",
-  "version": "0.2.9",
+  "version": "0.2.15",
   "description": "vue element-ui table form pagination",
-  "main": "./src/index.js",
+  "main": "./dist/el-admin-table.js",
   "scripts": {
     "dev": "vue-styleguidist server",
     "lint": "vue-cli-service lint --ext .js,.vue src",
-    "prettier": "prettier --loglevel silent --write src/**/*.vue src/**/*.js"
+    "prettier": "prettier --loglevel silent --write src/**/*.vue src/**/*.js",
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,7 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.5.0",
     "element-ui": "^2.8.2",
-    "vue": "^2.6.10"
+    "vue": "^2.6.11"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.2",
@@ -34,13 +35,19 @@
     "babel-plugin-dynamic-import-webpack": "^1.1.0",
     "css-loader": "^3.0.0",
     "eslint": "^6.0.1",
+    "file-loader": "^6.0.0",
+    "less-loader": "^6.2.0",
+    "node-sass": "^4.14.1",
     "pre-commit": "^1.2.2",
     "prettier": "^1.18.2",
+    "sass-loader": "^9.0.3",
+    "style-loader": "^1.2.1",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
-    "vue-loader": "^15.7.0",
-    "vue-template-compiler": "^2.6.10",
-    "webpack": "^4.35.2"
+    "vue-loader": "^15.9.3",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.35.2",
+    "webpack-cli": "^3.3.12"
   },
   "lint-staged": {
     "*.js": [
