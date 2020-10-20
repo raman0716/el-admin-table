@@ -17,7 +17,7 @@
       <slot name="right-btns" />
     </el-form>
 
-    <div v-loading="loading">
+    <div id="el_admin_loading">
       <slot name="top-content" />
 
       <el-table
@@ -100,7 +100,7 @@
 <script>
 import renderButton from "./render-button.vue";
 import renderExpand from "./render-expand";
-import { Table, Form, FormItem, TableColumn, Button, Pagination } from "element-ui";
+import { Table, Form, FormItem, TableColumn, Button, Loading, Pagination } from "element-ui";
 
 export default {
   name: "ElAdminTable",
@@ -221,7 +221,7 @@ export default {
     return {
       formDataOrigin: null,
       totalNum: 0,
-      loading: false,
+      loading: null,
       tableData: [],
       /**
        * 默认分页的配置项目，pagerAttrsMirror 的方式可以覆盖
@@ -237,6 +237,9 @@ export default {
     };
   },
   computed: {
+    loadingDom() {
+      return document.querySelector("#el_admin_loading");
+    },
     chooseOne() {
       return this.selectUnique !== undefined;
     },
@@ -323,15 +326,23 @@ export default {
           page: this.pager.currentPage,
           size: this.pagerAttrsMirror["page-size"]
         };
-        this.loading = true;
+        if (this.loadingDom) {
+          this.loading = Loading.service({
+            target: this.loadingDom,
+            lock: true,
+            spinner: "el-icon-loading"
+          });
+        }
         if (!this.apiFn) {
           setTimeout(() => {
-            this.loading = false;
+            this.loading && this.loading.close();
           }, 200);
           return console.warn("apiFn 为空, apiFn is not available");
         }
 
-        const { totalCount, data, payload } = await this.apiFn(params);
+        const { totalCount, data, payload } = await this.apiFn(params).finally(() => {
+          this.loading.close && this.loading.close();
+        });
         let res = payload || data || [];
         if (this.filterOut) {
           this.tableData = this.filterOut(res);
@@ -341,11 +352,9 @@ export default {
         this.totalNum = totalCount || this.tableData.length || 0;
         this.$emit("getTableData", res);
         this.$emit("update:totalCount", totalCount || this.tableData.length || 0);
-        this.loading = false;
         return Promise.resolve();
       } catch (e) {
         console.warn(e);
-        this.loading = false;
       }
     },
     sizeChange(val) {
