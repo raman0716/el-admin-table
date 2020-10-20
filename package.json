@@ -1,8 +1,8 @@
 {
   "name": "el-admin-table",
-  "version": "0.2.15",
+  "version": "0.3.1",
   "description": "vue element-ui table form pagination",
-  "main": "./dist/el-admin-table.js",
+  "main": "./src/index.vue",
   "scripts": {
     "dev": "vue-styleguidist server",
     "lint": "vue-cli-service lint --ext .js,.vue src",

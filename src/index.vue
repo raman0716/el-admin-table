@@ -11,15 +11,8 @@
     >
       <slot name="search" />
       <el-form-item v-if="hasSearchBtn">
-        <el-button
-          type="primary"
-          @click="goSearch"
-        >
-          {{ searchBtnTxt }}
-        </el-button>
-        <el-button @click="reset">
-          {{ resetBtnTxt }}
-        </el-button>
+        <el-button type="primary" @click="goSearch">{{ searchBtnTxt }}</el-button>
+        <el-button @click="reset">{{ resetBtnTxt }}</el-button>
       </el-form-item>
       <slot name="right-btns" />
     </el-form>
@@ -31,12 +24,12 @@
         ref="elTableRef"
         :data="tableData"
         size="small"
-        :class="{'last_key':chooseOne}"
+        :class="{ last_key: chooseOne }"
         v-bind="tableAttrsMirror"
         v-on="$listeners"
         @selection-change="selectChange"
       >
-        <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
+        <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
             v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'selection')"
             :key="`selection-${columnIndex}`"
@@ -44,7 +37,7 @@
           />
         </template>
 
-        <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
+        <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
             v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'index')"
             :key="`index-${columnIndex}`"
@@ -55,56 +48,45 @@
           />
         </template>
 
-        <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
+        <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
-            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => (c.type !== 'selection'&&c.type !== 'operation' && c.type !== 'index'))"
+            v-for="(column, columnIndex) in tableAttrs.columns.filter(
+              (c, i) => c.type !== 'selection' && c.type !== 'operation' && c.type !== 'index'
+            )"
             :key="`col-${columnIndex}`"
             :label="column.label"
             v-bind="column.col"
             :render="column.render"
           >
-            <template slot-scope="{row}">
-              <renderExpand
-                v-if="column.render"
-                :row="row"
-                :render="column.render"
-              />
-              <slot v-else-if="column.slot" :row="row" :name="column.slot"/>
+            <template slot-scope="{ row }">
+              <renderExpand v-if="column.render" :row="row" :render="column.render" />
+              <slot v-else-if="column.slot" :name="column.slot" :row="row" />
               <span v-else-if="column.formatter">{{ column.formatter(row) }}</span>
               <span v-else>{{ row[column.prop] }}</span>
             </template>
           </el-table-column>
         </template>
 
-        <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
+        <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
             v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'operation')"
             :key="`operation-${columnIndex}`"
             :label="operationTxt"
             v-bind="column.col"
           >
-            <template slot-scope="{row}">
-              <slot v-if="column.slot" :row="row" :name="column.slot"/>
-              <renderButton
-                v-else
-                v-for="(item, i ) in column.btns"
-                :key="i"
-                :data="item"
-                :row="row"
-              />
+            <template slot-scope="{ row }">
+              <slot v-if="column.slot" :name="column.slot" :row="row" />
+              <renderButton v-for="(item, i) in column.btns" v-else :key="i" :data="item" :row="row" />
             </template>
           </el-table-column>
         </template>
         <div slot="empty">
-          <slot name="empty">
-            {{ emptyTxt }}
-          </slot>
+          <slot name="empty">{{ emptyTxt }}</slot>
         </div>
       </el-table>
       <div class="pager">
         <el-pagination
           :current-page="pager.currentPage"
-          layout="total, sizes, prev, pager, next, jumper"
           :total="totalNum"
           v-bind="pagerAttrsMirror"
           @current-change="currentChange"
@@ -122,6 +104,7 @@ import { Table, Form, FormItem, TableColumn, Button, Pagination } from "element-
 
 export default {
   name: "ElAdminTable",
+  inheritAttrs: false,
   components: {
     renderButton,
     renderExpand,
@@ -132,7 +115,6 @@ export default {
     "el-button": Button,
     "el-pagination": Pagination
   },
-  inheritAttrs: false,
   props: {
     searchBtnTxt: {
       type: String,
