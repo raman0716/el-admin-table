@@ -1,18 +1,25 @@
 <template>
   <div class="el_admin_table">
     <el-form
+      v-if="hasSearch"
       ref="searchForm"
       :inline="true"
       size="small"
       :model="formData"
       v-on="$listeners"
-      v-if="hasSearch"
       @submit.native.prevent
     >
-      <slot name="search"></slot>
+      <slot name="search" />
       <el-form-item v-if="hasSearchBtn">
-        <el-button type="primary" @click="goSearch">{{searchBtnTxt}}</el-button>
-        <el-button @click="reset">{{resetBtnTxt}}</el-button>
+        <el-button
+          type="primary"
+          @click="goSearch"
+        >
+          {{ searchBtnTxt }}
+        </el-button>
+        <el-button @click="reset">
+          {{ resetBtnTxt }}
+        </el-button>
       </el-form-item>
       <slot name="right-btns" />
     </el-form>
@@ -21,19 +28,19 @@
       <slot name="top-content" />
 
       <el-table
+        ref="elTableRef"
         :data="tableData"
-        v-on="$listeners"
         size="small"
-        @selection-change="selectChange"
         :class="{'last_key':chooseOne}"
-        ref="elTable"
         v-bind="tableAttrsMirror"
+        v-on="$listeners"
+        @selection-change="selectChange"
       >
         <template v-if="tableAttrs.columns && tableAttrs.columns.length>0">
           <el-table-column
-            type="selection"
             v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'selection')"
             :key="`selection-${columnIndex}`"
+            type="selection"
           />
         </template>
 
@@ -56,10 +63,15 @@
             v-bind="column.col"
             :render="column.render"
           >
-            <template slot-scope="scope">
-              <renderExpand v-if="column.render" :row="scope.row" :render="column.render" />
-              <span v-else-if="column.formatter">{{ column.formatter(scope.row) }}</span>
-              <span v-else>{{ scope.row[column.prop] }}</span>
+            <template slot-scope="{row}">
+              <renderExpand
+                v-if="column.render"
+                :row="row"
+                :render="column.render"
+              />
+              <slot v-else-if="column.slot" :row="row" :name="column.slot"/>
+              <span v-else-if="column.formatter">{{ column.formatter(row) }}</span>
+              <span v-else>{{ row[column.prop] }}</span>
             </template>
           </el-table-column>
         </template>
@@ -71,28 +83,32 @@
             :label="operationTxt"
             v-bind="column.col"
           >
-            <template slot-scope="scope">
+            <template slot-scope="{row}">
+              <slot v-if="column.slot" :row="row" :name="column.slot"/>
               <renderButton
+                v-else
                 v-for="(item, i ) in column.btns"
                 :key="i"
                 :data="item"
-                :row="scope.row"
+                :row="row"
               />
             </template>
           </el-table-column>
         </template>
         <div slot="empty">
-          <slot name="empty">{{emptyTxt}}</slot>
+          <slot name="empty">
+            {{ emptyTxt }}
+          </slot>
         </div>
       </el-table>
       <div class="pager">
         <el-pagination
           :current-page="pager.currentPage"
-          @current-change="currentChange"
-          @size-change="sizeChange"
           layout="total, sizes, prev, pager, next, jumper"
           :total="totalNum"
           v-bind="pagerAttrsMirror"
+          @current-change="currentChange"
+          @size-change="sizeChange"
           v-on="$listeners"
         />
       </div>
@@ -102,16 +118,16 @@
 <script>
 import renderButton from "./render-button.vue";
 import renderExpand from "./render-expand";
-import { Form, FormItem, Table, TableColumn, Button, Pagination } from "element-ui";
+import { Table, Form, FormItem, TableColumn, Button, Pagination } from "element-ui";
 
 export default {
-  name: "el-admin-table",
+  name: "ElAdminTable",
   components: {
     renderButton,
     renderExpand,
+    "el-table": Table,
     "el-form": Form,
     "el-form-item": FormItem,
-    "el-table": Table,
     "el-table-column": TableColumn,
     "el-button": Button,
     "el-pagination": Pagination
@@ -219,6 +235,25 @@ export default {
       default: true
     }
   },
+  data() {
+    return {
+      formDataOrigin: null,
+      totalNum: 0,
+      loading: false,
+      tableData: [],
+      /**
+       * 默认分页的配置项目，pagerAttrsMirror 的方式可以覆盖
+       * initialize the pagination config, pagerAttrsMirror will overwrite this
+       */
+      defaultPager: {
+        "page-sizes": [5, 10, 20, 50],
+        "page-size": 10
+      },
+      pager: {
+        currentPage: 1
+      }
+    };
+  },
   computed: {
     chooseOne() {
       return this.selectUnique !== undefined;
@@ -242,24 +277,11 @@ export default {
       return json;
     }
   },
-  data() {
-    return {
-      formDataOrigin: null,
-      totalNum: 0,
-      loading: false,
-      tableData: [],
-      /**
-       * 默认分页的配置项目，pagerAttrsMirror 的方式可以覆盖
-       * initialize the pagination config, pagerAttrsMirror will overwrite this
-       */
-      defaultPager: {
-        "page-sizes": [5, 10, 20, 50],
-        "page-size": 10
-      },
-      pager: {
-        currentPage: 1
-      }
-    };
+  created() {
+    this.formDataOrigin = Object.assign({}, this.formData);
+  },
+  beforeMount() {
+    this.getList();
   },
   methods: {
     selectChange(val) {
@@ -268,13 +290,13 @@ export default {
       if (val.length > 1) {
         res = val.pop();
         this.clearSelection();
-        this.$refs.elTable.toggleRowSelection(res, true);
+        this.$refs.elTableRef.toggleRowSelection(res, true);
         return;
       }
       this.$emit("update:selectUnique", val[0] || {});
     },
     clearSelection() {
-      this.$refs.elTable.clearSelection();
+      this.$refs.elTableRef.clearSelection();
     },
     typeIndex(index) {
       return index + (this.pager.currentPage - 1) * this.defaultPager["page-size"] + 1;
@@ -300,7 +322,7 @@ export default {
       });
     },
     toggleRowSelection(row, expanded) {
-      this.$refs.elTable.toggleRowSelection(row, expanded);
+      this.$refs.elTableRef.toggleRowSelection(row, expanded);
     },
     currentChange(val) {
       this.pager.currentPage = val;
@@ -355,12 +377,6 @@ export default {
         this.getList();
       });
     }
-  },
-  created() {
-    this.formDataOrigin = Object.assign({}, this.formData);
-  },
-  beforeMount() {
-    this.getList();
   }
 };
 </script>
@@ -380,11 +396,9 @@ export default {
     margin-top: 20px;
   }
   .last_key {
-    /deep/ {
-      .el-table__header {
-        .el-checkbox {
-          display: none;
-        }
+    .el-table__header {
+      .el-checkbox {
+        display: none;
       }
     }
   }
