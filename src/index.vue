@@ -2,7 +2,7 @@
   <div class="el_admin_table">
     <el-form
       v-if="hasSearch"
-      ref="searchForm"
+      ref="searchFormRef"
       :inline="true"
       size="small"
       :model="formData"
@@ -74,8 +74,8 @@
             :label="operationTxt"
             v-bind="column.col"
           >
-            <template slot-scope="{ row }">
-              <slot v-if="column.slot" :name="column.slot" :row="row" />
+            <template slot-scope="{ row, $index }">
+              <slot v-if="column.slot" :name="column.slot" :row="row" :index="$index" />
               <renderButton v-for="(item, i) in column.btns" v-else :key="i" :data="item" :row="row" />
             </template>
           </el-table-column>
@@ -84,7 +84,7 @@
           <slot name="empty">{{ emptyTxt }}</slot>
         </div>
       </el-table>
-      <div class="pager">
+      <div class="pager" v-if="hasPager">
         <el-pagination
           :current-page="pager.currentPage"
           :total="totalNum"
@@ -159,6 +159,14 @@ export default {
      */
     apiFn: {
       type: Function
+    },
+    /**
+     * 是否使用分页器
+     * use pagination or not
+     */
+    hasPager: {
+      type: Boolean,
+      default: true,
     },
     /**
      * 分页插件配置
@@ -256,7 +264,7 @@ export default {
       let json = {};
       for (let x in this.tableAttrs) {
         if (x && x !== "columns") {
-          json.x = this.tableAttrs.x;
+          json[x] = this.tableAttrs[x];
         }
       }
       return json;
