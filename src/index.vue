@@ -11,7 +11,9 @@
     >
       <slot name="search" />
       <el-form-item v-if="hasSearchBtn">
-        <el-button type="primary" @click="goSearch">{{ searchBtnTxt }}</el-button>
+        <el-button type="primary" @click="goSearch">{{
+          searchBtnTxt
+        }}</el-button>
         <el-button @click="reset">{{ resetBtnTxt }}</el-button>
       </el-form-item>
       <slot name="right-btns" />
@@ -31,7 +33,9 @@
       >
         <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
-            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'selection')"
+            v-for="(column, columnIndex) in tableAttrs.columns.filter(
+              (c, i) => c.type === 'selection'
+            )"
             :key="`selection-${columnIndex}`"
             type="selection"
           />
@@ -39,7 +43,9 @@
 
         <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
-            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'index')"
+            v-for="(column, columnIndex) in tableAttrs.columns.filter(
+              (c, i) => c.type === 'index'
+            )"
             :key="`index-${columnIndex}`"
             :label="column.label || indexTxt"
             type="index"
@@ -51,7 +57,10 @@
         <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
             v-for="(column, columnIndex) in tableAttrs.columns.filter(
-              (c, i) => c.type !== 'selection' && c.type !== 'operation' && c.type !== 'index'
+              (c, i) =>
+                c.type !== 'selection' &&
+                c.type !== 'operation' &&
+                c.type !== 'index'
             )"
             :key="`col-${columnIndex}`"
             :label="column.label"
@@ -59,9 +68,20 @@
             :render="column.render"
           >
             <template slot-scope="{ row, $index }">
-              <renderExpand v-if="column.render" :row="row" :render="column.render" />
-              <slot v-else-if="column.slot" :name="column.slot" :row="row" :$index="$index" />
-              <span v-else-if="column.formatter">{{ column.formatter(row) }}</span>
+              <renderExpand
+                v-if="column.render"
+                :row="row"
+                :render="column.render"
+              />
+              <slot
+                v-else-if="column.slot"
+                :name="column.slot"
+                :row="row"
+                :$index="$index"
+              />
+              <span v-else-if="column.formatter">{{
+                column.formatter(row)
+              }}</span>
               <span v-else>{{ row[column.prop] }}</span>
             </template>
           </el-table-column>
@@ -69,14 +89,27 @@
 
         <template v-if="tableAttrs.columns && tableAttrs.columns.length > 0">
           <el-table-column
-            v-for="(column, columnIndex) in tableAttrs.columns.filter((c, i) => c.type === 'operation')"
+            v-for="(column, columnIndex) in tableAttrs.columns.filter(
+              (c, i) => c.type === 'operation'
+            )"
             :key="`operation-${columnIndex}`"
             :label="operationTxt"
             v-bind="column.col"
           >
             <template slot-scope="{ row, $index }">
-              <slot v-if="column.slot" :name="column.slot" :row="{}" :$index="$index" />
-              <renderButton v-for="(item, i) in column.btns" v-else :key="i" :data="item" :row="row" />
+              <slot
+                v-if="column.slot"
+                :name="column.slot"
+                :row="{}"
+                :$index="$index"
+              />
+              <renderButton
+                v-for="(item, i) in column.btns"
+                v-else
+                :key="i"
+                :data="item"
+                :row="row"
+              />
             </template>
           </el-table-column>
         </template>
@@ -98,43 +131,51 @@
   </div>
 </template>
 <script>
-import renderButton from "./render-button.vue";
-import renderExpand from "./render-expand";
-import { Table, Form, FormItem, TableColumn, Button, Loading, Pagination } from "element-ui";
+import renderButton from './render-button.vue'
+import renderExpand from './render-expand'
+import {
+  Table,
+  Form,
+  FormItem,
+  TableColumn,
+  Button,
+  Loading,
+  Pagination
+} from 'element-ui'
 
 export default {
-  name: "ElAdminTable",
+  name: 'ElAdminTable',
   inheritAttrs: false,
   components: {
     renderButton,
     renderExpand,
-    "el-table": Table,
-    "el-form": Form,
-    "el-form-item": FormItem,
-    "el-table-column": TableColumn,
-    "el-button": Button,
-    "el-pagination": Pagination
+    'el-table': Table,
+    'el-form': Form,
+    'el-form-item': FormItem,
+    'el-table-column': TableColumn,
+    'el-button': Button,
+    'el-pagination': Pagination
   },
   props: {
     searchBtnTxt: {
       type: String,
-      default: () => "查询"
+      default: () => '查询'
     },
     resetBtnTxt: {
       type: String,
-      default: () => "重置"
+      default: () => '重置'
     },
     indexTxt: {
       type: String,
-      default: () => "序号"
+      default: () => '序号'
     },
     operationTxt: {
       type: String,
-      default: () => "操作"
+      default: () => '操作'
     },
     emptyTxt: {
       type: String,
-      default: () => "暂无数据"
+      default: () => '暂无数据'
     },
     /**
      * 开启选择框单选时，emit 最后一个选择 selectUnique.sync 接收
@@ -221,155 +262,165 @@ export default {
     return {
       formDataOrigin: null,
       totalNum: 0,
-      loading: null,
+      loading: {},
       tableData: [],
       /**
        * 默认分页的配置项目，pagerAttrsMirror 的方式可以覆盖
        * initialize the pagination config, pagerAttrsMirror will overwrite this
        */
       defaultPager: {
-        "page-sizes": [5, 10, 20, 50],
-        "page-size": 10
+        'page-sizes': [5, 10, 20, 50],
+        'page-size': 10
       },
       pager: {
         currentPage: 1
       }
-    };
+    }
   },
   computed: {
     loadingDom() {
-      return document.querySelector("#el_admin_loading");
+      return document.querySelector('#el_admin_loading')
     },
     chooseOne() {
-      return this.selectUnique !== undefined;
+      return this.selectUnique !== undefined
     },
     hasSearch() {
-      return Object.keys(this.formData).length > 0;
+      return Object.keys(this.formData).length > 0
     },
     pagerAttrsMirror() {
       return {
         ...this.defaultPager,
         ...this.pagerAttrs
-      };
+      }
     },
     tableAttrsMirror() {
-      let json = {};
+      let json = {}
       for (let x in this.tableAttrs) {
-        if (x && x !== "columns") {
-          json[x] = this.tableAttrs[x];
+        if (x && x !== 'columns') {
+          json[x] = this.tableAttrs[x]
         }
       }
-      return json;
+      return json
     }
   },
   created() {
-    this.formDataOrigin = Object.assign({}, this.formData);
+    this.formDataOrigin = Object.assign({}, this.formData)
   },
   beforeMount() {
-    this.getList();
+    this.getList()
   },
   methods: {
     selectChange(val) {
-      if (!this.chooseOne) return;
-      let res = [];
+      if (!this.chooseOne) return
+      let res = []
       if (val.length > 1) {
-        res = val.pop();
-        this.clearSelection();
-        this.$refs.elTableRef.toggleRowSelection(res, true);
-        return;
+        res = val.pop()
+        this.clearSelection()
+        this.$refs.elTableRef.toggleRowSelection(res, true)
+        return
       }
-      this.$emit("update:selectUnique", val[0] || {});
+      this.$emit('update:selectUnique', val[0] || {})
     },
     clearSelection() {
-      this.$refs.elTableRef.clearSelection();
+      this.$refs.elTableRef.clearSelection()
     },
     typeIndex(index) {
-      return index + (this.pager.currentPage - 1) * this.defaultPager["page-size"] + 1;
+      return (
+        index +
+        (this.pager.currentPage - 1) * this.defaultPager['page-size'] +
+        1
+      )
     },
     goSearch() {
-      this.pager.currentPage = 1;
-      this.getList();
-      this.$emit("goSearch");
+      this.pager.currentPage = 1
+      this.getList()
+      this.$emit('goSearch')
     },
     reset() {
-      this.pager.currentPage = 1;
+      this.pager.currentPage = 1
       /**
        * 置空 formDataOrigin
        * reset formDataOrigin
        */
       for (let i in this.formDataOrigin) {
-        this.formDataOrigin[i] = "";
+        this.formDataOrigin[i] = ''
       }
-      this.$emit("update:formData", this.formDataOrigin);
-      this.$emit("reset");
+      this.$emit('update:formData', this.formDataOrigin)
+      this.$emit('reset')
       this.$nextTick(() => {
-        this.getList();
-      });
+        this.getList()
+      })
     },
     toggleRowSelection(row, expanded) {
-      this.$refs.elTableRef.toggleRowSelection(row, expanded);
+      this.$refs.elTableRef.toggleRowSelection(row, expanded)
     },
     currentChange(val) {
-      this.pager.currentPage = val;
-      this.getList();
+      this.pager.currentPage = val
+      this.getList()
     },
     async getList() {
-      let t = Object.values(this.customQuery).some(e => !e);
+      let t = Object.values(this.customQuery).some((e) => !e)
       if (t) {
-        console.warn("customQuery有部分参数为空, customQuery has at least one empty prop");
-        return;
+        console.warn(
+          'customQuery有部分参数为空, customQuery has at least one empty prop'
+        )
+        return
       }
       try {
         const params = {
           ...this.formData,
           ...this.customQuery,
           page: this.pager.currentPage,
-          size: this.pagerAttrsMirror["page-size"]
-        };
+          size: this.pagerAttrsMirror['page-size']
+        }
         if (this.loadingDom) {
           this.loading = Loading.service({
             target: this.loadingDom,
             lock: true,
-            spinner: "el-icon-loading"
-          });
+            spinner: 'el-icon-loading'
+          })
         }
         if (!this.apiFn) {
           setTimeout(() => {
-            this.loading && this.loading.close && this.loading.close();
-          }, 200);
-          return console.warn("apiFn 为空, apiFn is not available");
+            this.loading.close && this.loading.close()
+          }, 200)
+          return console.warn('apiFn 为空, apiFn is not available')
         }
 
-        const { totalCount, data, payload } = await this.apiFn(params).finally(() => {
-          this.loading && this.loading.close && this.loading.close();
-        });
-        let res = payload || data || [];
+        const response = await this.apiFn(params).finally(() => {
+          this.loading.close && this.loading.close()
+        })
+        const { totalCount, data, payload } = response
+        let res = payload || data || []
         if (this.filterOut) {
-          this.tableData = this.filterOut(res);
+          this.tableData = this.filterOut(res)
         } else {
-          this.tableData = res;
+          this.tableData = res
         }
-        this.totalNum = totalCount || this.tableData.length || 0;
-        this.$emit("getTableData", res);
-        this.$emit("update:totalCount", totalCount || this.tableData.length || 0);
-        return Promise.resolve();
+        this.totalNum = totalCount || this.tableData.length || 0
+        this.$emit('getTableData', res)
+        this.$emit(
+          'update:totalCount',
+          totalCount || this.tableData.length || 0
+        )
+        return Promise.resolve()
       } catch (e) {
-        console.warn(e);
+        console.warn(e)
       }
     },
     sizeChange(val) {
-      this.defaultPager["page-size"] = val;
-      this.$emit("update:pagerAttrs", {
+      this.defaultPager['page-size'] = val
+      this.$emit('update:pagerAttrs', {
         ...this.pagerAttrs,
-        "page-size": val
-      });
-      this.pager.currentPage = 1;
+        'page-size': val
+      })
+      this.pager.currentPage = 1
       this.$nextTick(() => {
-        this.getList();
-      });
+        this.getList()
+      })
     }
   }
-};
+}
 </script>
 <style lang="scss">
 .el_admin_table {
