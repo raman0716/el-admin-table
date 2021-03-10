@@ -36,6 +36,14 @@
     type: Function
   },
   /**
+    * 是否使用分页器
+    * use pagination or not
+    */
+  hasPager: {
+    type: Boolean,
+    default: true
+  },
+  /**
     * 分页插件配置
     * el-pagination config
     */
@@ -96,7 +104,7 @@
 ###  tableAttrs
 ```
   tableAttrs {
-    ...{ el-table props },
+    ...{ /* el-table props */ },
     columns:[
       {
         col: {

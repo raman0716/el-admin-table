@@ -58,9 +58,9 @@
             v-bind="column.col"
             :render="column.render"
           >
-            <template slot-scope="{ row }">
+            <template slot-scope="{ row, $index }">
               <renderExpand v-if="column.render" :row="row" :render="column.render" />
-              <slot v-else-if="column.slot" :name="column.slot" :row="row" />
+              <slot v-else-if="column.slot" :name="column.slot" :row="row" :$index="$index" />
               <span v-else-if="column.formatter">{{ column.formatter(row) }}</span>
               <span v-else>{{ row[column.prop] }}</span>
             </template>
@@ -75,7 +75,7 @@
             v-bind="column.col"
           >
             <template slot-scope="{ row, $index }">
-              <slot v-if="column.slot" :name="column.slot" :row="row" :index="$index" />
+              <slot v-if="column.slot" :name="column.slot" :row="{}" :$index="$index" />
               <renderButton v-for="(item, i) in column.btns" v-else :key="i" :data="item" :row="row" />
             </template>
           </el-table-column>
@@ -118,23 +118,23 @@ export default {
   props: {
     searchBtnTxt: {
       type: String,
-      default: "查询"
+      default: () => "查询"
     },
     resetBtnTxt: {
       type: String,
-      default: "重置"
+      default: () => "重置"
     },
     indexTxt: {
       type: String,
-      default: "序号"
+      default: () => "序号"
     },
     operationTxt: {
       type: String,
-      default: "操作"
+      default: () => "操作"
     },
     emptyTxt: {
       type: String,
-      default: "暂无数据"
+      default: () => "暂无数据"
     },
     /**
      * 开启选择框单选时，emit 最后一个选择 selectUnique.sync 接收
@@ -149,7 +149,7 @@ export default {
      */
     totalCount: {
       type: Number,
-      default: 0
+      default: () => 0
     },
     /**
      * API函数 给个参数位置 apiFn(param)
@@ -166,7 +166,7 @@ export default {
      */
     hasPager: {
       type: Boolean,
-      default: true,
+      default: true
     },
     /**
      * 分页插件配置
@@ -174,9 +174,7 @@ export default {
      */
     pagerAttrs: {
       type: Object,
-      default: () => {
-        return {};
-      }
+      default: () => ({})
     },
     /**
      * 不用渲染form的时候用的参数条件，任意参数为空，将不发请求，需要手动
@@ -185,9 +183,7 @@ export default {
      */
     customQuery: {
       type: Object,
-      default: () => {
-        return {};
-      }
+      default: () => ({})
     },
     /**
      * 表格配置项
@@ -195,9 +191,7 @@ export default {
      */
     tableAttrs: {
       type: Object,
-      default: () => {
-        return {};
-      }
+      default: () => ({})
     },
     /**
      * 表单
@@ -205,9 +199,7 @@ export default {
      */
     formData: {
       type: Object,
-      default: () => {
-        return {};
-      }
+      default: () => ({})
     },
     /**
      * 表格列表需要自己组装的数据结构
@@ -222,7 +214,7 @@ export default {
      */
     hasSearchBtn: {
       type: Boolean,
-      default: true
+      default: () => true
     }
   },
   data() {
@@ -343,13 +335,13 @@ export default {
         }
         if (!this.apiFn) {
           setTimeout(() => {
-            this.loading && this.loading.close();
+            this.loading && this.loading.close && this.loading.close();
           }, 200);
           return console.warn("apiFn 为空, apiFn is not available");
         }
 
         const { totalCount, data, payload } = await this.apiFn(params).finally(() => {
-          this.loading.close && this.loading.close();
+          this.loading && this.loading.close && this.loading.close();
         });
         let res = payload || data || [];
         if (this.filterOut) {

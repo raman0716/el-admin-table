@@ -4,11 +4,11 @@ import ElAdminTable from "./index.vue";
 export function install(Vue) {
   if (install.installed) return;
   install.installed = true;
-  Vue.component("el-admin-table", ElAdminTable);
+  Vue.component("ElAdminTable", ElAdminTable);
 }
 
 // Create module definition for Vue.use()
-const plugin = {
+const Plugin = {
   install
 };
 
@@ -20,8 +20,8 @@ if (typeof window !== "undefined") {
   GlobalVue = global.Vue;
 }
 if (GlobalVue) {
-  GlobalVue.use(plugin);
+  GlobalVue.use(Plugin);
 }
 
 // To allow use as module (npm/webpack/etc.) export component
-export default ElAdminTable;
+export default Plugin;
